@@ -1,0 +1,38 @@
+export LESS='-R'
+# export LESSOPEN='|pygmentize -g %s'
+test -r /usr/share/source-highlight/src-hilite-lesspipe.sh && export LESSOPEN='|/usr/share/source-highlight/src-hilite-lesspipe.sh %s'
+
+export EDITOR=emacs
+
+# # black background
+# export PS1="\
+# \[\033[38;5;40m\]\u\
+# @\
+# h\
+# \[\033[38;5;9m\] \$?\
+# \[\033[38;5;79m\] \t\
+# \[\033[38;5;147m\] \w\
+# \[\033[38;5;15m\]\n\$ "
+# # \[\033[38;5;0m\]\n\$ " black
+
+
+# white background
+PS1=""
+PS1="$PS1\[\033[38;5;22m\]\u@\h" # user @ host
+PS1="$PS1\[\033[38;5;88m\] \$?"  # exit code of last command
+PS1="$PS1\[\033[38;5;57m\] \t"   # timestamp
+PS1="$PS1\[\033[38;5;25m\] \w"   # work dir
+PS1="$PS1\[\033[38;5;0m\]\n\$ "  # prompt in new line
+export PS1
+
+
+# solarized background color
+# rgb hex
+# fd f6 e3
+# rgb dec
+# 253 246 227
+
+# git g and i alias completion
+source /usr/share/bash-completion/completions/git
+__git_complete g __git_main
+__git_complete i __git_main
