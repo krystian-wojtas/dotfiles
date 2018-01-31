@@ -1,6 +1,5 @@
-[user]
-	email = krystian.wojtas@aptiv.com
-	name = Krystian Wojtas
+[include]
+    path = .gitconfig-account
 
 [alias]
     a = add
