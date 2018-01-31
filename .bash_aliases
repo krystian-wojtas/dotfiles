@@ -1,3 +1,4 @@
+alias s='ssh'
 alias g='git'
 alias i='tig'
 
