@@ -1,0 +1,19 @@
+[user]
+	email = krystian.wojtas@aptiv.com
+	name = Krystian Wojtas
+
+[alias]
+    a = add
+    b = branch
+    c = checkout
+    d = diff
+    dt = difftool
+    i = commit
+    l = log
+    m = merge
+    mt = mergetool
+    r = reset
+    re = rebase
+    s = status
+    w = show
+    
