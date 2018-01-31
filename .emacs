@@ -20,3 +20,7 @@
    kept-new-versions 6
    kept-old-versions 2
    version-control t)       ; use versioned backups
+
+; scroll one line
+(global-set-key (kbd "M-n") `scroll-up-line)
+(global-set-key (kbd "M-p") `scroll-down-line)
