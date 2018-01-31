@@ -1,4 +1,10 @@
+alias a='cat'
+alias c='cd'
 alias s='ssh'
+alias v='less'
+alias lr='ls -rst'
+alias e='emacs -nw'
+alias p='picocom -b 115200'
 alias g='git'
 alias i='tig'
 
