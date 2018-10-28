@@ -12,5 +12,5 @@ xrandr --output eDP-1-1 --primary --mode 1920x1080 --pos 0x1080 --rotate normal
 # Always exit with success
 # No matter if any external display is connected
 # Then lightdm could continue to run
-# Instead of staying in endless loo
+# Instead of staying in endless loop
 true
