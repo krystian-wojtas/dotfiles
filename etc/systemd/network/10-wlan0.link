@@ -1,0 +1,6 @@
+[Match]
+Path=pci-0000:07:00.0
+
+[Link]
+Name=wlan0
+MACAddressPolicy=random
