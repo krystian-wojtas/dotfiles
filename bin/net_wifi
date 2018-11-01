@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Setup wifi connection
+
+# Stop on first failure
+set -e
+
+# Show each step
+set -x
+
+# Interface name
+IFNAME=wlan0
+
+# Turn on wifi
+ip link set "$IFNAME" up
+
+# Connect to wifi network
+wpa_supplicant -i "$IFNAME" -c /etc/wpa_supplicant/wpa_supplicant.conf -B
+
+# Get ip address
+dhclient "$IFNAME"
