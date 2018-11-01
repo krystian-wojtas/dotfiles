@@ -1,0 +1,8 @@
+[Match]
+Path=pci-0000:08:00.0
+
+[Link]
+# To rename have effect initramfs need to be regenerated
+# sudo update-initramfs -u && sudo reboot
+Name=eth0
+MACAddressPolicy=random
