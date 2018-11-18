@@ -11,11 +11,22 @@ set -x
 # Interface name
 IFNAME=wlan0
 
+# Default config is symlink
+config=/etc/wpa_supplicant/wpa_supplicant.conf
+
+# If argument is passed, then use pointed config file
+if [ -n "$1" ]; then
+    config="/etc/wpa_supplicant/wpa_supplicant_$1.conf"
+fi
+
 # Turn on wifi
 ip link set "$IFNAME" up
 
+# Kill any other wpa_supplicant instance
+killall wpa_supplicant || true
+
 # Connect to wifi network
-wpa_supplicant -i "$IFNAME" -c /etc/wpa_supplicant/wpa_supplicant.conf -B
+wpa_supplicant -i "$IFNAME" -c "$config" -B
 
 # Get ip address
 dhclient "$IFNAME"
