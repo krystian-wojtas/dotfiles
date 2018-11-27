@@ -40,3 +40,6 @@ __git_complete i __git_main
 # s alias completion behaves as ssh command
 source /usr/share/bash-completion/completions/ssh 2>/dev/null
 complete -F _ssh s
+
+# net_wifi completion
+source "$HOME"/etc/bash_completion.d/net_wifi

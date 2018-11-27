@@ -1,0 +1,9 @@
+#!/bin/bash
+
+wifi_known_networks_list=$(
+    cd /etc/wpa_supplicant/
+    ls wpa_supplicant_*.conf | 
+    perl -nE 'say "$1" if /wpa_supplicant_(\w+)/'
+)
+
+complete -W "$wifi_known_networks_list" net_wifi
