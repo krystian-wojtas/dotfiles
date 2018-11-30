@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Stop on first failure
+set -e
+
+# Show each command
+set -x
+
+# Name of internet interface
+IFNAME=eth0
+
+# Disable wifi
+killall wpa_supplicant || true
+
+# Set interface up and running
+ip link set "$IFNAME" up
+
+# Get ip address
+dhclient "$IFNAME"
