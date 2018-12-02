@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# symlinks for net configuration
+ln -sf /home/k/bin/net_eth /usr/local/bin/net_eth
+ln -sf /home/k/bin/net_wifi /usr/local/bin/net_wifi
