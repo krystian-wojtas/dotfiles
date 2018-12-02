@@ -19,6 +19,9 @@ if [ -n "$1" ]; then
     config="/etc/wpa_supplicant/wpa_supplicant_$1.conf"
 fi
 
+# Show config to use
+realpath "$config"
+
 # Turn on wifi
 ip link set "$IFNAME" up
 
