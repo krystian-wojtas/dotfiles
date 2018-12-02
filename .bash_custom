@@ -15,16 +15,15 @@ export EDITOR=emacs
 # \[\033[38;5;15m\]\n\$ "
 # # \[\033[38;5;0m\]\n\$ " black
 
-
-# white background
-PS1=""
-PS1="$PS1\[\033[38;5;22m\]\u@\h" # user @ host
-PS1="$PS1\[\033[38;5;88m\] \$?"  # exit code of last command
-PS1="$PS1\[\033[38;5;57m\] \t"   # timestamp
-PS1="$PS1\[\033[38;5;25m\] \w"   # work dir
-PS1="$PS1\[\033[38;5;0m\]\n\$ "  # prompt in new line
-export PS1
-
+if ! fgconsole 2>/dev/null; then
+    PS1=""
+    PS1="$PS1\[\033[38;5;22m\]\u@\h" # user @ host
+    PS1="$PS1\[\033[38;5;88m\] \$?"  # exit code of last command
+    PS1="$PS1\[\033[38;5;57m\] \t"   # timestamp
+    PS1="$PS1\[\033[38;5;25m\] \w"   # work dir
+    PS1="$PS1\[\033[38;5;0m\]\n\$ "  # prompt in new line
+    export PS1
+fi
 
 # solarized background color
 # rgb hex
