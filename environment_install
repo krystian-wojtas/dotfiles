@@ -18,3 +18,7 @@ chmod 440 /etc/sudoers.d/nopasswd
 
 # install some tools
 apt install picocom tree
+
+# regenerate initramfs to renaming network interface have effect
+# then reboot
+update-initramfs -u
