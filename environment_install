@@ -3,3 +3,7 @@
 # symlinks for net configuration
 ln -sf /home/k/bin/net_eth /usr/local/bin/net_eth
 ln -sf /home/k/bin/net_wifi /usr/local/bin/net_wifi
+
+# add user to some groups
+usermod -aG docker "$USER"
+usermod -aG dialout "$USER"
