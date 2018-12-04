@@ -8,5 +8,13 @@ ln -sf /home/k/bin/net_wifi /usr/local/bin/net_wifi
 usermod -aG docker "$USER"
 usermod -aG dialout "$USER"
 
+# sudoers config to preserve some environemnt variables
+cp /home/k/etc/sudoers.d/nopasswd /etc/sudoers.d/env
+chmod 440 /etc/sudoers.d/env
+
+# sudoers config to not require password for some commands
+cp /home/k/etc/sudoers.d/nopasswd /etc/sudoers.d/nopasswd
+chmod 440 /etc/sudoers.d/nopasswd
+
 # install some tools
 apt install picocom tree
