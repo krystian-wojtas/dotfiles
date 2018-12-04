@@ -1,0 +1,1 @@
+ALL ALL=NOPASSWD: /usr/local/bin/net_eth, /usr/local/bin/net_wifi, /sbin/reboot
