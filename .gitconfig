@@ -1,23 +1,50 @@
 [include]
     path = .gitconfig-account
 
+[http]
+#    proxy = http://127.0.0.1:3128
+[https]
+#    proxy = https://127.0.0.1:3128
+
 [alias]
     a = add
     b = branch
     c = checkout
     d = diff
     dt = difftool
+    f = fetch
     i = commit
     k = cherry-pick
     l = log
+    ladog = log --all --decorate --oneline --graph
     m = merge
     mt = mergetool
     r = reset
     re = rebase
     s = status
+    ss = status --short
     w = show
+
+[push]
+	default = upstream
+	rebase = true
     
 [core]
     editor = 'emacs' -nw
+    pager = less -F -X
+
+[diff]
+	tool = meld
+[merge]
+	tool = meld
+[difftool]
+	prompt = false
+[mergetool]
+	prompt = false
+
 [color]
-	ui = auto
+    ui = auto
+
+# proxy workarounds
+# [url "https://github.com/file/file.git"]
+#	insteadOf = git://github.com/file/file.git
