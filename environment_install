@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# stop on first failure
+set -e
+
+# show each command
+set -x
+
 # symlinks for net configuration
 ln -sf /home/k/bin/net_eth /usr/local/bin/net_eth
 ln -sf /home/k/bin/net_wifi /usr/local/bin/net_wifi
