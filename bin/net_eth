@@ -17,3 +17,10 @@ ip link set "$IFNAME" up
 
 # Get ip address
 dhclient "$IFNAME"
+
+# Figure out new ip address
+address_ip=$(ip addr show "$IFNAME" | perl -nE '/inet ([\d\.]+)/ and say "$1"')
+
+# Update default route
+ip route delete default
+ip route add default via "$address_ip"
