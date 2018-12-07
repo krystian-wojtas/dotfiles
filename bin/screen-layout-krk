@@ -5,9 +5,10 @@ set -x
 
 # Setup screen layouts
 # Some of them could be disconnected
-xrandr --output HDMI-0 --mode 1920x1080 --pos 0x0 --rotate normal
-xrandr --output DP-2 --mode 1920x1080 --pos 1920x1080 --rotate normal
-xrandr --output eDP-1-1 --primary --mode 1920x1080 --pos 0x1080 --rotate normal
+xrandr --output eDP-1-1 --mode 1920x1080 --primary
+xrandr --output HDMI-0  --mode 1920x1080 --above eDP-1-1
+xrandr --output DP-2    --mode 1920x1080 --right-of HDMI-0
+# xrandr --output DP-2 --mode 1920x1080 --pos 0x0 --rotate normal
 
 # Always exit with success
 # No matter if any external display is connected
