@@ -32,8 +32,5 @@ killall wpa_supplicant || true
 wpa_supplicant -i "$IFNAME" -c "$config" -B
 
 # Get ip address
+killall dhclient
 dhclient "$IFNAME"
-
-# Update default route
-ip route delete default
-ip route add default dev "$IFNAME" via 192.168.1.2
