@@ -11,19 +11,19 @@ ln -sf /home/"$USER"/etc/lightdm/lightdm.conf /etc/lightdm/lightdm.conf
 ln -sf /home/"$USER"/bin/screen-layout /usr/local/bin/screen-layout
 
 # symlinks for net configuration
-ln -sf /home/k/bin/net_eth /usr/local/bin/net_eth
-ln -sf /home/k/bin/net_wifi /usr/local/bin/net_wifi
+ln -sf /home/"$USER"/bin/net_eth /usr/local/bin/net_eth
+ln -sf /home/"$USER"/bin/net_wifi /usr/local/bin/net_wifi
 
 # add user to some groups
 usermod -aG docker "$USER"
 usermod -aG dialout "$USER"
 
 # sudoers config to preserve some environemnt variables
-cp /home/k/etc/sudoers.d/nopasswd /etc/sudoers.d/env
+cp /home/"$USER"/etc/sudoers.d/nopasswd /etc/sudoers.d/env
 chmod 440 /etc/sudoers.d/env
 
 # sudoers config to not require password for some commands
-cp /home/k/etc/sudoers.d/nopasswd /etc/sudoers.d/nopasswd
+cp /home/"$USER"/etc/sudoers.d/nopasswd /etc/sudoers.d/nopasswd
 chmod 440 /etc/sudoers.d/nopasswd
 
 # install some tools
