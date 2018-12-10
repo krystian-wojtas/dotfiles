@@ -32,5 +32,5 @@ killall wpa_supplicant || true
 wpa_supplicant -i "$IFNAME" -c "$config" -B
 
 # Get ip address
-killall dhclient
+killall dhclient || true
 dhclient "$IFNAME"

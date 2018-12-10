@@ -16,5 +16,5 @@ killall wpa_supplicant || true
 ip link set "$IFNAME" up
 
 # Get ip address
-killall dhclient
+killall dhclient || true
 dhclient "$IFNAME"
