@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Stop on first failure
+set -e
+
+# Show each command
+set -x
+
+# Virtual terminal number
+export DISPLAY=:6
+
+# Run X server on another virtual terminal
+X -quiet -nolisten tcp -noreset $DISPLAY &
+
+# Run i3 window manager by connecting to new X server as current user
+DISPLAY="$DISPLAY" su - "$SUDO_USER" -c i3
