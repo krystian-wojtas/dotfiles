@@ -6,6 +6,10 @@ set -e
 # show each command
 set -x
 
+# install lightdm configuration
+ln -sf /home/"$USER"/etc/lightdm/lightdm.conf /etc/lightdm/lightdm.conf
+ln -sf /home/"$USER"/bin/screen-layout /usr/local/bin/screen-layout
+
 # symlinks for net configuration
 ln -sf /home/k/bin/net_eth /usr/local/bin/net_eth
 ln -sf /home/k/bin/net_wifi /usr/local/bin/net_wifi
