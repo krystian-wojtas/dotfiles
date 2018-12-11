@@ -17,6 +17,11 @@ ln -sf /home/"$USER"/setup/legion-y530/.gitconfig-account /home/"$USER"/.gitconf
 ln -sf /home/"$USER"/setup/legion-y530/.gitconfig-account-gmail /home/"$USER"/.gitconfig-account-gmail
 ln -sf /home/"$USER"/setup/legion-y530/.docker/config.json /home/"$USER"/.docker/config.json
 
+# link dirs and files to laptop setup
+# this files may be overwritten
+ln -sf /home/"$USER"/setup/legion-y530/.config/lxpanel/Lubuntu/panels/panel /home/"$USER"/.config/lxpanel/Lubuntu/panels/panel
+ln -sf /home/"$USER"/setup/legion-y530/.config/lxterminal/lxterminal.conf /home/"$USER"/.config/lxterminal/lxterminal.conf
+
 # install lightdm configuration
 ln -sf /home/"$USER"/etc/lightdm/lightdm.conf /etc/lightdm/lightdm.conf
 ln -sf /home/"$USER"/bin/screen-layout /usr/local/bin/screen-layout
