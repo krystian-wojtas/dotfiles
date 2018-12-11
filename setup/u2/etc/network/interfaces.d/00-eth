@@ -1,0 +1,4 @@
+# Network interfaces
+allow-hotplug eth0
+iface eth0 inet dhcp
+  hwaddress ether c2:22:09:f2:5f:e9
