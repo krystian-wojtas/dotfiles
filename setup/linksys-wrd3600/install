@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# stop on first failure
+set -e
+
+# show each command
+set -x
+
+# link dirs and files to laptop setup
+ln -sf /home/root/setup/linksys-wrd3600/etc /home/root/etc
+
+# symlinks for dns
+ln -sf /home/root/etc/resolv.conf.9.9.9.9 /etc/resolv.conf.9.9.9.9
