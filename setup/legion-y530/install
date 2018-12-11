@@ -30,6 +30,9 @@ ln -sf /home/"$SUDO_USER"/bin/screen-layout /usr/local/bin/screen-layout
 ln -sf /home/"$SUDO_USER"/bin/net_eth /usr/local/bin/net_eth
 ln -sf /home/"$SUDO_USER"/bin/net_wifi /usr/local/bin/net_wifi
 
+# symlink for dns 9.9.9.9
+ln -sf /home/"$SUDO_USER"/etc/resolv.conf.9.9.9.9 /etc/resolv.conf.9.9.9.9
+
 # add user to some groups
 usermod -aG docker "$SUDO_USER"
 usermod -aG dialout "$SUDO_USER"
