@@ -1,0 +1,24 @@
+#!/bin/sh /etc/rc.common
+START=95
+STOP=10
+
+boot() {
+    start
+}
+
+start() {
+    /usr/lib/uddns/uddns_update.sh
+}
+
+stop() {
+    killall /usr/lib/uddns/uddns_update.sh
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    restart
+}
