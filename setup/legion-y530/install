@@ -34,9 +34,13 @@ ln -sf /home/"$SUDO_USER"/bin/net_wifi /usr/local/bin/net_wifi
 ln -sf /home/"$SUDO_USER"/etc/resolv.conf.9.9.9.9 /etc/resolv.conf.9.9.9.9
 ln -sf /home/"$SUDO_USER"/etc/resolv.conf.systemd /etc/resolv.conf.systemd
 
+# symlinks for bluetooth
+ln -sf /home/"$SUDO_USER"/etc/bluetooth/main.conf /etc/bluetooth/main.conf
+
 # add user to some groups
 usermod -aG docker "$SUDO_USER"
 usermod -aG dialout "$SUDO_USER"
+usermod -a -G lp "$SUDO_USER"
 
 # sudoers config to preserve some environemnt variables
 cp /home/"$SUDO_USER"/etc/sudoers.d/nopasswd /etc/sudoers.d/env
