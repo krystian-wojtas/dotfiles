@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# stop on first failure
+set -e
+
+# show each command
+set -x
+
+# install some bluetooth tools
+apt install bluez pulseaudio-module-bluetooth python-gobject python-gobject-2 bluez-tools bluez-hcidump
