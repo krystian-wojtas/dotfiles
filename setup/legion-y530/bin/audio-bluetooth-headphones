@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# stop on first failure
+set -e
+
+# show each command
+set -x
+
+# headphones id
+headphones=00:0D:44:DC:F9:65
+
+# connect to bluetooth headphones
+bluetoothctl <<EOF
+power on
+connect $headphones
+EOF
+
+# change default audio sink to bluetooth headphones
+pactl set-default-sink bluez_sink.00_0D_44_DC_F9_65.a2dp_sink
