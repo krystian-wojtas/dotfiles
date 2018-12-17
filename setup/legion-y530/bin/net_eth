@@ -15,7 +15,9 @@ killall wpa_supplicant || true
 # Set interface up and running
 ip link set "$IFNAME" up
 
+# Delete all routes
+ip route show | cut -f 1 -d' ' | xargs -n 1 ip route delete || true
+
 # Get ip address
 killall dhclient || true
-ip route delete all || true
 dhclient "$IFNAME"

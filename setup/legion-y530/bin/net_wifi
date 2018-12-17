@@ -31,7 +31,9 @@ killall wpa_supplicant || true
 # Connect to wifi network
 wpa_supplicant -i "$IFNAME" -c "$config" -B
 
+# Delete all routes
+ip route show | cut -f 1 -d' ' | xargs -n 1 ip route delete || true
+
 # Get ip address
 killall dhclient || true
-ip route delete all || true
 dhclient "$IFNAME"
