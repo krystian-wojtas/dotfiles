@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Setup ethernet connection
+
 # Stop on first failure
 set -e
 
