@@ -1,3 +1,18 @@
+# Configuration file for uddns
+# File is sourced by shell
+
+# Secret credentials must be filled manually
 user=
 password=
 hostname=
+
+# Construct url to ddns service with all nescessary parameters
+# Variables are figured out later by uddns
+# This way ip variable is resolved when it is known
+# noip service
+# url="http://$user:$password@dynupdate.no-ip.com/nic/update?hostname=$hostname\&myip=$ip"
+# dynu service
+url='https://$user:$password@api.dynu.com/nice/update?hostname=$hostname\&myip=$ip'
+
+# Default delay between updates is 5 minutes
+delay=$((5*60))
