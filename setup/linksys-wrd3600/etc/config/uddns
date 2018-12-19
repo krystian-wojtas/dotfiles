@@ -12,7 +12,7 @@ hostname=
 # noip service
 # url="http://$user:$password@dynupdate.no-ip.com/nic/update?hostname=$hostname&myip=$ip"
 # dynu service
-url='https://$user:$password@api.dynu.com/nice/update?hostname=$hostname&myip=$ip'
+url='http://$user:$password@api.dynu.com/nice/update?hostname=$hostname&myip=$ip'
 
 # Default delay between updates is 5 minutes
 delay=$((5*60))
