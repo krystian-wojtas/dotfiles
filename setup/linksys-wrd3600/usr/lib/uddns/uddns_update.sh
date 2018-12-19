@@ -3,7 +3,7 @@
 # Script periodically updates ip address assigned to hostname in dynamic dns database
 
 # Use default configuration file path if not set
-[-z "$config"] && config=/etc/config/uddns
+[ -z "$config"] && config=/etc/config/uddns
 
 # Read configuration
 . "$config"
