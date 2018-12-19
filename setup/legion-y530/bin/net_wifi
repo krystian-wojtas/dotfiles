@@ -32,7 +32,7 @@ killall wpa_supplicant || true
 wpa_supplicant -i "$IFNAME" -c "$config" -B
 
 # Delete all routes
-ip route show | cut -f 1 -d' ' | xargs -n 1 ip route delete || true
+ip route show | cut -f 1 -d' ' | xargs -n 1 ip route delete 2>/dev/null || true
 
 # Get ip address
 killall dhclient || true
