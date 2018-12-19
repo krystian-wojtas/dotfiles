@@ -9,8 +9,11 @@ set -x
 # link dirs and files to laptop setup
 ln -sf /home/root/setup/linksys-wrd3600/etc /home/root/etc
 
-# symlinks for dns
-ln -sf /home/root/etc/resolv.conf.9.9.9.9 /etc/resolv.conf.9.9.9.9
+# symlinks for dns client config
+# ln -sf /home/root/etc/resolv.conf.9.9.9.9 /etc/resolv.conf.9.9.9.9
+
+# symlink for dhcp and dns server config
+ln -sf /home/root/etc/dnsmasq.conf /etc/dnsmasq.conf
 
 # symlinks for uddns service to run at startup
 ln -s /etc/init.d/uddns /etc/rc.d/S97uddns
