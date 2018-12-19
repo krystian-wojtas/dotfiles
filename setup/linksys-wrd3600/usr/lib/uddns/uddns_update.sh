@@ -24,7 +24,7 @@ fi
 while true; do
 
     # Get external ip address
-    ip=`curl --silent http://ipecho.net/plain`
+    ip=$(curl --silent http://ipecho.net/plain)
 
     # Replace shell variable names with its values in url string
     url_resolved=$(
