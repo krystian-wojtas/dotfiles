@@ -27,7 +27,13 @@ while true; do
     ip=`curl --silent http://ipecho.net/plain`
 
     # Replace shell variable names with its values in url string
-    url_resolved=$(eval echo "$url")
+    url_resolved=$(
+        echo "$url" | 
+        sed "s/\$user/$user/" |
+        sed "s/\$password/$password/" |
+        sed "s/\$hostname/$hostname/" |
+        sed "s/\$ip/$ip/"
+    )
 
     # Update ddns ip
     response=$(curl --silent "$url_resolved")
