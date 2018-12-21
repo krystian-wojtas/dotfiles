@@ -1,5 +1,9 @@
 #!/bin/sh
 
-# Play sound
+# Purpose: notify user when some command is finished
 
+# Show notification if passed any text
+[ -n "$@" ] && notify-send "$@"
+
+# Play sound
 paplay /usr/share/sounds/freedesktop/stereo/complete.oga
