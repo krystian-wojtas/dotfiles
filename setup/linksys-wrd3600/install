@@ -2,6 +2,13 @@
 
 # Install some custom configuratation for openwrt switch
 
+# TODO manually
+# * change root password
+#     passwd
+# * add private ssh key
+#     ssh root@192.168.1.1 "tee -a /etc/dropbear/authorized_keys" < ~/.ssh/id_rsa.pub
+# * Set credentials for uddns in file /etc/config/uddns
+
 # Stop on first failure
 set -e
 
@@ -18,16 +25,9 @@ cd "$(dirname "$0")"
 [ -z "openwrt_ip" ] || openwrt_ip=192.168.1.1
 [ -z "openwrt_user" ] || openwrt_user=root
 
-# Add private ssh key
-ssh-copy-id "$openwrt_user@$openwrt_ip"
-
 `# Create local archive of needed directories` \
 tar cf - $dirs |
 `# Connect to openwrt switch and unpack archive to overwrite default configs with custom ones` \
 ssh "$openwrt_user@$openwrt_ip" "
     tar x -C / -f -
 "
-
-# TODO manually
-# * passwd
-# * Set credentials for uddns in file /etc/config/uddns
