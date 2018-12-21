@@ -24,7 +24,7 @@ fi
 while true; do
 
     # Get external ip address
-    ip=$(curl --silent http://ipecho.net/plain)
+    ip=$(wget -q -O- http://ipecho.net/plain)
 
     # Replace shell variable names with its values in url string
     url_resolved=$(
@@ -36,7 +36,7 @@ while true; do
     )
 
     # Update ddns ip
-    response=$(curl --silent "$url_resolved")
+    response=$(wget -q -O- "$url_resolved")
 
     # Check if update is ok and log it
     if echo "$response" | grep -E 'good|nochg'; then
