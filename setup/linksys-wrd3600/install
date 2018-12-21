@@ -18,6 +18,9 @@ cd "$(dirname "$0")"
 [ -z "openwrt_ip" ] || openwrt_ip=192.168.1.1
 [ -z "openwrt_user" ] || openwrt_user=root
 
+# Add private ssh key
+ssh-copy-id "$openwrt_user@$openwrt_ip"
+
 `# Create local archive of needed directories` \
 tar cf - $dirs |
 `# Connect to openwrt switch and unpack archive to overwrite default configs with custom ones` \
