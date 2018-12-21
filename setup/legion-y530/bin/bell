@@ -2,8 +2,18 @@
 
 # Purpose: notify user when some command is finished
 
+# TODO
 # Show notification if passed any text
-[ -n "$@" ] && notify-send "$@"
+# [ -n "$@" ] && notify-send "$@"
+
+# Run passed command
+"$@"
+
+# Keep status of last command
+status="$?"
 
 # Play sound
 paplay /usr/share/sounds/freedesktop/stereo/complete.oga
+
+# Exit with status code of wrapped command
+exit "$status"
