@@ -1,23 +1,30 @@
 #!/bin/bash
 
-# stop on first failure
+# Install some custom configuratation for openwrt switch
+
+# Stop on first failure
 set -e
 
-# show each command
+# Show each command
 set -x
 
-# link dirs and files to laptop setup
-ln -sf /root/setup/linksys-wrd3600/etc /root/etc
+# Directories to install on openwrt switch
+dirs="etc/ usr/"
 
-# symlinks for dns client config
-# ln -sf /root/etc/resolv.conf.9.9.9.9 /etc/resolv.conf.9.9.9.9
+# Go to script directory
+cd "$(dirname "$0")"
 
-# symlink for dhcp and dns server config
-ln -sf /root/etc/dnsmasq.conf /etc/dnsmasq.conf
+# Use default access values if not specified
+[ -z "openwrt_ip" ] || openwrt_ip=192.168.1.1
+[ -z "openwrt_user" ] || openwrt_user=root
 
-# symlink for hardcoded assignment between hostnames and ip addresses
-ln -sf /root/etc/hosts /etc/hosts
+`# Create local archive of needed directories` \
+tar cf - $dirs |
+`# Connect to openwrt switch and unpack archive to overwrite default configs with custom ones` \
+ssh "$openwrt_user@$openwrt_ip" "
+    tar x -C / -f -
+"
 
-# symlinks for uddns service to run at startup
-ln -s /etc/init.d/uddns /etc/rc.d/S97uddns
-ln -s /etc/init.d/uddns /etc/rc.d/K97uddns
+# TODO manually
+# * passwd
+# * Set credentials for uddns in file /etc/config/uddns
