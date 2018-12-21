@@ -1,3 +1,6 @@
+# TODO rename this sample file to /etc/config/uddns
+# TODO fill it correctly
+
 # Configuration file for uddns
 # File is sourced by shell
 
