@@ -17,7 +17,7 @@ config dnsmasq
 config dhcp 'lan'
 	option interface 'lan'
 	option start '100'
-	option limit '150'
+	option limit '99'
 	option leasetime '12h'
 	option dhcpv6 'server'
 	option ra 'server'
