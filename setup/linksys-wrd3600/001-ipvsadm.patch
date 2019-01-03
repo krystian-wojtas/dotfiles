@@ -1,0 +1,199 @@
+diff -Naur ipvsadm-1.26/ipvsadm.spec ipvsadm-1.26.owrt/ipvsadm.spec
+--- ipvsadm-1.26/ipvsadm.spec	2011-02-08 00:25:36.000000000 +0000
++++ ipvsadm-1.26.owrt/ipvsadm.spec	1970-01-01 01:00:00.000000000 +0100
+@@ -1,100 +0,0 @@
+-%define prefix   /usr
+-
+-Summary: Utility to administer the Linux Virtual Server
+-Name: ipvsadm
+-Version: 1.26
+-Release: 1
+-License: GPL
+-URL: http://www.LinuxVirtualServer.org/
+-Group: Applications/System
+-Source0: http://www.LinuxVirtualServer.org/software/ipvsadm-%{version}.tar.gz
+-BuildRoot: /var/tmp/%name-%{PACKAGE_VERSION}-root
+-Provides: %{name}-%{version}
+-Conflicts: piranha <= 0.4.14
+-
+-%description
+-ipvsadm is a utility to administer the IP Virtual Server services
+-offered by the latest Linux kernel 2.6.x.
+-
+-
+-%prep
+-%setup -n %{name}-%{version}
+-
+-
+-%build
+-CFLAGS="${RPM_OPT_FLAGS}" make
+-
+-
+-%install
+-rm -rf $RPM_BUILD_ROOT
+-mkdir -p ${RPM_BUILD_ROOT}/{sbin,%{_mandir}/man8,etc/rc.d/init.d}
+-make install BUILD_ROOT=${RPM_BUILD_ROOT} MANDIR=%{_mandir}
+-
+-
+-%files
+-%defattr(-,root,root)
+-%doc README
+-%config /etc/rc.d/init.d/ipvsadm
+-/sbin/ipvsadm*
+-%{_mandir}/man8/ipvsadm*
+-
+-%post
+-/sbin/chkconfig --add ipvsadm
+-
+-%preun
+-/sbin/chkconfig --del ipvsadm
+-
+-
+-%clean
+-rm -rf $RPM_BUILD_DIR/%{name}
+-rm -rf $RPM_BUILD_ROOT
+-
+-
+-%changelog
+-* Thu Jun 23 2005 Steve Nielsen <snielsen@comscore.com>
+-- Respect rpmmacros that might be set (by using rpm --eval)
+-
+-* Sat Dec 20 2003 Wensong Zhang <wensong@linux-vs.org>
+-- tidy up the description
+-
+-* Sat Apr  5 2003 Wensong Zhang <wensong@linux-vs.org>
+-- Removed the unnecessary Docdir setting.
+-
+-* Thu Dec 16 2001 Wensong Zhang <wensong@linuxvirtualserver.org>
+-- Changed to install ipvsadm man pages according to the %{_mandir}
+-
+-* Thu Dec 30 2000 Wensong Zhang <wensong@linuxvirtualserver.org>
+-- update the %file section
+-
+-* Thu Dec 17 2000 Wensong Zhang <wensong@linuxvirtualserver.org>
+-- Added a if-condition to keep both new or old rpm utility building
+-  the package happily.
+-
+-* Tue Dec 12 2000 P.Copeland <bryce@redhat.com>
+-- Small modifications to make the compiler happy in RH7 and the Alpha
+-- Fixed the documentation file that got missed off in building
+-  the rpm
+-- Made a number of -pedantic mods though popt will not compile with
+-  -pedantic
+-
+-* Wed Aug 9 2000 Horms <horms@vergenet.net>
+-- Removed Obseletes tag as ipvsadm is back in /sbin where it belongs 
+-  as it is more or less analogous to both route and ipchains both of
+-  which reside in /sbin.
+-- Create directory to install init script into. Init scripts won't install
+-  into build directory unless this is done
+-
+-* Thu Jul  6 2000 Wensong Zhang <wensong@linuxvirtualserver.org>
+-- Changed to build rpms on the ipvsadm tar ball directly
+-
+-* Wed Jun 21 2000 P.Copeland <copeland@redhat.com>
+-- fixed silly install permission settings
+-
+-* Mon Jun 19 2000 P.Copeland <copeland@redhat.com>
+-- Added 'dist' and 'rpms' to the Makefile
+-- Added Obsoletes tag since there were early versions
+-  of ipvsadm-*.rpm that installed in /sbin
+-- Obsolete tag was a bit vicious re: piranha
+-
+-* Mon Apr 10 2000 Horms <horms@vergenet.net>
+-- created for version 1.9
+diff -Naur ipvsadm-1.26/libipvs/ip_vs.h ipvsadm-1.26.owrt/libipvs/ip_vs.h
+--- ipvsadm-1.26/libipvs/ip_vs.h	2011-02-07 02:38:57.000000000 +0000
++++ ipvsadm-1.26.owrt/libipvs/ip_vs.h	2016-01-24 19:59:27.304631247 +0000
+@@ -10,6 +10,7 @@
+ #include <sys/socket.h>
+ #include <arpa/inet.h>
+ #include <linux/types.h>	/* For __beXX types in userland */
++#include <sys/types.h>
+
+ #ifdef LIBIPVS_USE_NL
+ #include <netlink/netlink.h>
+diff -Naur ipvsadm-1.26/libipvs/libipvs.c ipvsadm-1.26.owrt/libipvs/libipvs.c
+--- ipvsadm-1.26/libipvs/libipvs.c	2011-02-07 02:38:57.000000000 +0000
++++ ipvsadm-1.26.owrt/libipvs/libipvs.c	2016-01-24 20:02:49.840430677 +0000
+@@ -32,7 +32,7 @@
+ struct ip_vs_getinfo ipvs_info;
+
+ #ifdef LIBIPVS_USE_NL
+-static struct nl_handle *sock = NULL;
++static struct nl_sock *sock = NULL;
+ static int family, try_nl = 1;
+ #endif
+
+@@ -73,7 +73,7 @@
+ {
+ 	int err = EINVAL;
+
+-	sock = nl_handle_alloc();
++	sock = nl_socket_alloc();
+ 	if (!sock) {
+ 		nlmsg_free(msg);
+ 		return -1;
+@@ -88,7 +88,7 @@
+
+ 	/* To test connections and set the family */
+ 	if (msg == NULL) {
+-		nl_handle_destroy(sock);
++		nl_socket_free(sock);
+ 		sock = NULL;
+ 		return 0;
+ 	}
+@@ -104,12 +104,12 @@
+
+ 	nlmsg_free(msg);
+
+-	nl_handle_destroy(sock);
++	nl_socket_free(sock);
+
+ 	return 0;
+
+ fail_genl:
+-	nl_handle_destroy(sock);
++	nl_socket_free(sock);
+ 	sock = NULL;
+ 	nlmsg_free(msg);
+ 	errno = err;
+diff -Naur ipvsadm-1.26/Makefile ipvsadm-1.26.owrt/Makefile
+--- ipvsadm-1.26/Makefile	2011-02-08 00:24:23.000000000 +0000
++++ ipvsadm-1.26.owrt/Makefile	2016-01-24 12:40:39.427307725 +0000
+@@ -37,18 +37,17 @@
+
+ CC		= gcc
+ INCLUDE		=
+-SBIN		= $(BUILD_ROOT)/sbin
++SBIN		= $(DESTDIR)/usr/sbin
+ MANDIR		= usr/man
+-MAN		= $(BUILD_ROOT)/$(MANDIR)/man8
+-INIT		= $(BUILD_ROOT)/etc/rc.d/init.d
++INIT		= $(DESTDIR)/etc/rc.d/init.d
+ MKDIR		= mkdir
+ INSTALL		= install
+ STATIC_LIBS	= libipvs/libipvs.a
+
+ ifeq "${ARCH}" "sparc64"
+-    CFLAGS = -Wall -Wunused -Wstrict-prototypes -g -m64 -pipe -mcpu=ultrasparc -mcmodel=medlow
++    CFLAGS += -Wall -Wunused -Wstrict-prototypes -g -m64 -pipe -mcpu=ultrasparc -mcmodel=medlow
+ else
+-    CFLAGS = -Wall -Wunused -Wstrict-prototypes -g
++    CFLAGS += -Wall -Wunused -Wstrict-prototypes -g
+ endif
+
+
+@@ -104,12 +103,6 @@
+ 		$(INSTALL) -m 0755 ipvsadm $(SBIN)
+ 		$(INSTALL) -m 0755 ipvsadm-save $(SBIN)
+ 		$(INSTALL) -m 0755 ipvsadm-restore $(SBIN)
+-		[ -d $(MAN) ] || $(MKDIR) -p $(MAN)
+-		$(INSTALL) -m 0644 ipvsadm.8 $(MAN)
+-		$(INSTALL) -m 0644 ipvsadm-save.8 $(MAN)
+-		$(INSTALL) -m 0644 ipvsadm-restore.8 $(MAN)
+-		[ -d $(INIT) ] || $(MKDIR) -p $(INIT)
+-		$(INSTALL) -m 0755 ipvsadm.sh $(INIT)/ipvsadm
+
+ clean:
+ 		rm -f ipvsadm $(NAME).spec $(NAME)-$(VERSION).tar.gz
