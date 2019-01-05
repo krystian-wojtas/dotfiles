@@ -1,5 +1,6 @@
 alias a='cat'
 alias c='cd'
+alias cal='ncal -w -M -b'
 alias s='ssh'
 alias v='less'
 alias lr='ls -rst'
