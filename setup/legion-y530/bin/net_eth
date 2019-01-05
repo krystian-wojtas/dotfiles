@@ -23,6 +23,12 @@ ip route show |
     xargs -n 1 ip route delete 2>/dev/null \
 || true
 
-# Get ip address
+# Delete previous ip address if any
+(
+    ip_with_netmask=$(ip address show "$IFNAME" | grep -Po 'inet \K[\d\.\/]+')
+    ip address del "$ip_with_netmask" dev "$IFNAME" 2>/dev/null
+) || true
+
+# Get ip address from dhcp server
 killall dhclient || true
 dhclient "$IFNAME"
