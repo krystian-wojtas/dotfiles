@@ -1,13 +1,13 @@
 alias a='cat'
 alias c='cd'
 alias cal='ncal -w -M -b'
-alias s='ssh'
-alias v='less'
-alias lr='ls -rst'
 alias e='emacs -nw'
-alias p='picocom -b 115200'
 alias g='git'
 alias i='tig'
+alias lr='ls -rst'
 alias m='make'
+alias p='picocom -b 115200'
+alias s='ssh'
+alias v='less'
 
 test -r "$HOME/.bash_custom" && source "$HOME/.bash_custom"
