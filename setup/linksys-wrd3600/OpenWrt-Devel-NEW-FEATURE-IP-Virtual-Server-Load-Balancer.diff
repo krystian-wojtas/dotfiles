@@ -1,0 +1,618 @@
+diff --git a/package/kernel/linux/modules/netfilter.mk b/package/kernel/linux/modules/netfilter.mk
+index a0a19b2..71bed3d 100644
+--- a/package/kernel/linux/modules/netfilter.mk
++++ b/package/kernel/linux/modules/netfilter.mk
+@@ -270,6 +270,56 @@ define KernelPackage/ipt-ipset
+ endef
+ $(eval $(call KernelPackage,ipt-ipset))
+
++IPVS_MODULES:= \
++	ipvs/ip_vs \
++	ipvs/ip_vs_lc \
++	ipvs/ip_vs_wlc \
++	ipvs/ip_vs_rr \
++	ipvs/ip_vs_wrr \
++	ipvs/ip_vs_lblc \
++	ipvs/ip_vs_lblcr \
++	ipvs/ip_vs_dh \
++	ipvs/ip_vs_sh \
++	ipvs/ip_vs_fo \
++	ipvs/ip_vs_nq \
++	ipvs/ip_vs_sed
++
++define KernelPackage/ipvs
++  SUBMENU:=Netfilter Extensions
++  TITLE:=IP Virtual Server modules
++  DEPENDS:=+kmod-lib-crc32c
++  KCONFIG:= \
++	CONFIG_IP_VS \
++	CONFIG_IP_VS_IPV6=y \
++	CONFIG_IP_VS_DEBUG=n \
++	CONFIG_IP_VS_PROTO_TCP=y \
++	CONFIG_IP_VS_PROTO_UDP=y \
++	CONFIG_IP_VS_PROTO_AH_ESP=y \
++	CONFIG_IP_VS_PROTO_ESP=y \
++	CONFIG_IP_VS_PROTO_AH=y \
++	CONFIG_IP_VS_PROTO_SCTP=y \
++	CONFIG_IP_VS_TAB_BITS=12 \
++	CONFIG_IP_VS_RR \
++	CONFIG_IP_VS_WRR \
++	CONFIG_IP_VS_LC \
++	CONFIG_IP_VS_WLC \
++	CONFIG_IP_VS_FO \
++	CONFIG_IP_VS_OVF \
++	CONFIG_IP_VS_LBLC \
++	CONFIG_IP_VS_LBLCR \
++	CONFIG_IP_VS_DH \
++	CONFIG_IP_VS_SH \
++	CONFIG_IP_VS_SED \
++	CONFIG_IP_VS_NQ \
++	CONFIG_IP_VS_SH_TAB_BITS=8 \
++	CONFIG_IP_VS_NFCT=n \
++	CONFIG_NETFILTER_XT_MATCH_IPVS=n
++
++  FILES:=$(foreach mod,$(IPVS_MODULES),$(LINUX_DIR)/net/netfilter/$(mod).ko)
++  #AUTOLOAD:=$(call AutoLoad,70,$(notdir $(IPVS_MODULES_LOAD)))
++  $(call AddDepends/ipt,+kmod-ipt-conntrack)
++endef
++$(eval $(call KernelPackage,ipvs))
+
+ define KernelPackage/ipt-nat
+   TITLE:=Basic NAT targets
+diff --git a/package/network/utils/ipvsadm/Makefile b/package/network/utils/ipvsadm/Makefile
+new file mode 100644
+index 0000000..6ce06a1
+--- /dev/null
++++ b/package/network/utils/ipvsadm/Makefile
+@@ -0,0 +1,60 @@
++#
++# Copyright (C) 2016 OpenWRT, Mauro Mozzarelli
++#
++# This is free software, licensed under the GNU General Public License v2.
++# See /LICENSE for more information.
++#
++# AUTHOR: Mauro Mozzarelli
++#
++include $(TOPDIR)/rules.mk
++
++PKG_NAME:=ipvsadm
++PKG_VERSION:=1.26
++PKG_MAINTAINER:=Mauro Mozzarelli <mauro@ezplanet.net>
++PKG_LICENSE:=GPL-1.0
++PKG_RELEASE:=1
++
++PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
++PKG_SOURCE_URL:=http://www.linuxvirtualserver.org/software/kernel-2.6/
++PKG_MD5SUM:=eac3ba3f62cd4dea2da353aeddd353a8
++
++PKG_BUILD_PARALLEL:=1
++PKG_INSTALL:=1
++
++ifeq ($(CONFIG_DEVEL),y)
++	export QUILT=1
++endif
++
++include $(INCLUDE_DIR)/package.mk
++
++define Package/$(PKG_NAME)
++  SECTION:=net
++  CATEGORY:=Network
++  TITLE:=IP Virtual Server Configuration Manager
++  URL:=http://www.linuxvirtualserver.org
++  DEPENDS:= +kmod-ipvs +libnl-tiny +libpopt
++endef
++
++#	-I$(STAGING_DIR)/usr/include/libnl/linux -fPIC -DLIBIPVS_USE_NL
++TARGET_CFLAGS += \
++	-I$(STAGING_DIR)/usr/include/libnl-tiny -fPIC -DLIBIPVS_USE_NL -D_GNU_SOURCE
++
++MAKE_FLAGS += \
++	CC="$(TOOLCHAIN_DIR)/bin/$(TARGET_CC)" \
++	CXX="$(TOOLCHAIN_DIR)/bin/$(TARGET_CXX)" \
++	CFLAGS="$(TARGET_CFLAGS)" \
++	LIBS="-lnl-tiny -lpopt"
++
++define Build/Compile
++	$(call Build/Compile/Default)
++endef
++
++define Package/ipvsadm/install
++	$(INSTALL_DIR) $(1)/usr/sbin
++	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ipvsadm $(1)/usr/sbin/
++	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ipvsadm-save $(1)/usr/sbin/
++	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ipvsadm-restore $(1)/usr/sbin/
++	$(CP) ./files/* $(1)/
++endef
++
++$(eval $(call BuildPackage,$(PKG_NAME)))
+diff --git a/package/network/utils/ipvsadm/files/etc/config/ipvs b/package/network/utils/ipvsadm/files/etc/config/ipvs
+new file mode 100644
+index 0000000..9d6be66
+--- /dev/null
++++ b/package/network/utils/ipvsadm/files/etc/config/ipvs
+@@ -0,0 +1,44 @@
++# Sample Configuration
++# please see the documentation at www.linuxvirtualserver.org to learn how to
++# configure real servers.
++# This configuration is used by /etc/init.d/ipvsadm to setup and load balance
++# virtual servers to available real servers.
++# A cron job is used to activate/deactivate real servers based on their availability (ping)
++#
++# Currently this configuration defaults to persistent gateway mode
++# Currently NAT masquerading and other options provided by ipvsadm are not implemented by this configuration
++# If virtual and real servers have internet static IPs, the wan interface must be part of a static IP Subnet
++# ipvsadm is fully functional for manual configuration
++
++config vipvs globals
++	option enabled 0
++# role master|slave
++	option role 'master'
++	option interface 'lan'
++# valid schedulers are included in the kernel schedulers list
++	list scheduler wlc
++
++# for each vip an alias ip is initialized on the wan/lan router interface
++# the vip must not be the same as the router's ip
++config virtual
++	option enabled 0
++	option name admin
++	option vip '192.168.10.10'
++	option interface lan
++	option alias 10
++	option scheduler 'wlc'
++	list real '192.168.10.100'
++	list real '192.168.10.101'
++
++# lists protocols/ports
++config admin
++	option protocol tcp
++	option src_port 80
++	option dest_port 80
++
++config admin
++	option protocol udp
++# if only 'port' is specified then source and destination ports are the same
++# port 0 means all ports are forwarded to the real servers
++	option port 0
++
+diff --git a/package/network/utils/ipvsadm/files/etc/init.d/ipvsadm b/package/network/utils/ipvsadm/files/etc/init.d/ipvsadm
+new file mode 100755
+index 0000000..7c8c378
+--- /dev/null
++++ b/package/network/utils/ipvsadm/files/etc/init.d/ipvsadm
+@@ -0,0 +1,187 @@
++#!/bin/sh /etc/rc.common
++
++################################################################################
++# Author: Mauro Mozzarelli
++# Description: builds ipvs configuration from uci openwrt parameters
++#              load/unload ip_vs kernel modules
++#              start/stop ipvs scheduler
++#              start/stop cron job scheduler
++# Dependencies: /etc/config/ipvs; ipvsadm; ip_vs Kernel modules; cron
++# Notes: Firewall must be configured separately
++#	Configuration files in /tmp/ipvsadm.d:
++#	virt.*  = virtual servers
++#   *.stop  = real server in down state ipvs table
++#   *.start = real server in up state ipvs table
++#   vserv.* = virtual servers ipvs table
++################################################################################
++
++START=70
++STOP=10
++
++USE_PROCD=1
++
++BASE_DIR=/tmp/ipvsadm.d
++TMP_DIR=$BASE_DIR
++REAL_SERVERS=realServers
++KERNEL_RELEASE=`uname -r`
++MODULES=/lib/modules/$KERNEL_RELEASE
++IPVSMOD=ip_vs
++# Cron job used to check if real servers are available and update ipvs
++# scheduler accordingly
++CRON_SCHEDULER='*		*	*	*	*	/usr/sbin/checkRealServers		# IPVS_SCHEDULER'
++
++# Check if real server is in the list and add if not present
++update_real_server () {
++	realServer=$1
++	gotit=0
++	for s in `cat $BASE_DIR/$REAL_SERVERS`; do
++		if [ $r == $s ]; then
++			gotit=1
++			break
++		fi
++	done
++	if [ $gotit -eq 0 ]; then
++		echo $r >> $BASE_DIR/$REAL_SERVERS
++	fi
++}
++
++start_service () {
++	enabled=`uci -q get ipvs.globals.enabled`
++	case $enabled in
++		0)
++			exit
++			;;
++		1)
++			;;
++		*)
++			echo Invalid initialization parameter: enabled=$enabled
++			exit
++			;;
++	esac
++	if [ -d $BASE_DIR ]; then
++		cd $BASE_DIR
++	else
++		mkdir -p $BASE_DIR
++		cd $BASE_DIR
++	fi
++	rm -f $BASE_DIR/*
++	rm -f $TMP_DIR/*.down
++	touch $BASE_DIR/$REAL_SERVERS
++	modprobe $IPVSMOD
++	cm=0
++	for m in `uci -q get ipvs.globals.scheduler`; do
++			cm=$((cm+1))
++			modprobe ${IPVSMOD}_$m
++	done
++	# Default to wlc if no schedulers
++	if [ $cm -eq 0 ]; then
++		modprobe ${IPVSMOD}_wlc
++	fi
++	cv=0
++	while [ x`uci -q get ipvs.@virtual[$cv]` == x'virtual' ]; do
++		enabled=`uci get ipvs.@virtual[$cv].enabled`
++		if [ $enabled -eq 0 ]; then
++			cv=$((cv+1))
++			continue
++		fi
++		name=`uci get ipvs.@virtual[$cv].name`
++		vip=`uci get ipvs.@virtual[$cv].vip`
++		interface=`uci get ipvs.@virtual[$cv].interface`
++		device=`uci -P /var/state get network.${interface}.ifname`
++		alias=`uci get ipvs.@virtual[$cv].alias`
++		scheduler=`uci get ipvs.@virtual[$cv].scheduler`
++		# ifconfig
++		ifconfig $device:$alias $vip netmask 255.255.255.255 up
++		#
++		real=`uci get ipvs.@virtual[$cv].real`
++		if [ ! -z "$real" -a "$real" != " " ]; then
++			vip_done=no
++			for r in $real; do
++				update_real_server $r
++				cd=0
++				while [ x`uci -q get ipvs.@$name[$cd]` == x$name ]; do
++					protocol=`uci -q get ipvs.@$name[$cd].protocol`
++					src_port=`uci -q get ipvs.@$name[$cd].src_port`
++					dest_port=`uci -q get ipvs.@$name[$cd].dest_port`
++					case $protocol in
++						tcp)
++							protocol="-t"
++							;;
++						udp)
++							protocol="-u"
++							;;
++						*)
++							# Default to tcp protocol
++							protocol="-t"
++							;;
++					esac
++					if [ -z $src_port ]; then
++						port=`uci -q get ipvs.@$name[$cd].port`
++						if [ -z $port ]; then
++							port=0
++						fi
++						src_port=$port
++					fi
++					if [ -z $dest_port ]; then
++						dest_port=$src_port
++					fi
++					if [ x$vip_done == x'no' ];then
++						echo "-A $protocol $vip:$src_port -s $scheduler -p" >> $BASE_DIR/vserv.start.$interface
++						echo "-D $protocol $vip:$src_port" >> $BASE_DIR/vserv.stop.$interface
++					fi
++					echo "-a $protocol $vip:$src_port -r $r:$dest_port -g -w 1" >> $BASE_DIR/$r.start
++					echo "-d $protocol $vip:$src_port -r $r" >> $BASE_DIR/$r.stop
++					cd=$((cd+1))
++				done
++				vip_done=yes
++			done
++		fi
++		cv=$((cv+1))
++	done
++	for i in `cat $BASE_DIR/$REAL_SERVERS`; do
++		date > $TMP_DIR/$i.down
++	done
++	for i in ${BASE_DIR}/vserv.start.* ; do
++		ipvsadm -R < $i
++	done
++
++	grole=`uci get ipvs.globals.role`
++	gintf=`uci get ipvs.globals.interface`
++	ipvsadm --start-daemon $grole --mcast-interface `uci -P /var/state get network.$gintf.ifname`
++	if [ $? -gt 0 ]; then
++		logger -p info "ERROR: IPVSADM daemon failed to start"
++		exit
++	fi
++	(crontab -l ; echo "$CRON_SCHEDULER")|crontab -
++	logger -p info "IPVSADM daemon started"
++}
++
++stop_service () {
++	for i in ${BASE_DIR}/*.stop ; do
++		ipvsadm -R < $i
++	done
++	for i in ${BASE_DIR}/vserv.stop.* ; do
++		ipvsadm -R < $i
++	done
++	n=0
++	while [ x`uci -q get ipvs.@virtual[$n]` == x'virtual' ]; do
++		interface=`uci get ipvs.@virtual[$n].interface`
++		device=`uci -P /var/state get network.${interface}.ifname`
++		alias=`uci get ipvs.@virtual[$n].alias`
++		ifconfig $device:$alias down
++		n=$((n+1))
++	done
++	ipvsadm --stop-daemon `uci get ipvs.globals.role`
++	rm -f $TMP_DIR/*.down
++	rm -rf $BASE_DIR
++	for m in `uci -q get ipvs.globals.scheduler`; do
++			cm=$((cm+1))
++			rmmod ${IPVSMOD}_$m
++	done
++	# Default to wlc if no schedulers
++	if [ $m -eq 0 ]; then
++		rmmod ${IPVSMOD}_wlc
++	fi
++	rmmod $IPVSMOD
++	crontab -l |grep -v IPVS_SCHEDULER|crontab -
++}
+diff --git a/package/network/utils/ipvsadm/files/usr/sbin/checkRealServers
+b/package/network/utils/ipvsadm/files/usr/sbin/checkRealServers
+new file mode 100755
+index 0000000..f801c4b
+--- /dev/null
++++ b/package/network/utils/ipvsadm/files/usr/sbin/checkRealServers
+@@ -0,0 +1,36 @@
++#!/bin/sh
++################################################################################
++# Author: Mauro Mozzarelli
++# Description: checks whether a real server is up and running and if it is
++#              then it starts the services
++# Dependencies: /tmp/ipvsadm.d
++#				configuration files created by /etc/init.d/ipvsadm
++#	virt.*  = virtual servers
++#   *.stop  = real server in down state ipvs table
++#   *.start = real server in up state ipvs table
++#   *.down  = real server down status
++################################################################################
++
++BASE_DIR=/tmp/ipvsadm.d
++TMP_DIR=$BASE_DIR
++REAL_SERVERS=realServers
++
++if [ -f $BASE_DIR/$REAL_SERVERS ]; then
++	for i in `cat $BASE_DIR/$REAL_SERVERS`; do
++		ping -qc 3 $i > /dev/null
++		RESULT=$?
++		if [ $RESULT -gt 0 ]; then
++			if [ ! -f $TMP_DIR/$i.down ]; then
++				ipvsadm -R < $BASE_DIR/$i.stop
++				date > $TMP_DIR/$i.down
++				logger -p info "IPVS Server $i is down"
++			fi
++		else
++			if [ -f $TMP_DIR/$i.down ]; then
++				ipvsadm -R < $BASE_DIR/$i.start
++				rm $TMP_DIR/$i.down
++				logger -p info "IPVS Server $i is on-line"
++			fi
++		fi
++	done
++fi
+diff --git a/package/network/utils/ipvsadm/patches/001-ipvsadm.patch b/package/network/utils/ipvsadm/patches/001-ipvsadm.patch
+new file mode 100644
+index 0000000..643d5ae
+--- /dev/null
++++ b/package/network/utils/ipvsadm/patches/001-ipvsadm.patch
+@@ -0,0 +1,199 @@
++diff -Naur ipvsadm-1.26/ipvsadm.spec ipvsadm-1.26.owrt/ipvsadm.spec
++--- ipvsadm-1.26/ipvsadm.spec	2011-02-08 00:25:36.000000000 +0000
+++++ ipvsadm-1.26.owrt/ipvsadm.spec	1970-01-01 01:00:00.000000000 +0100
++@@ -1,100 +0,0 @@
++-%define prefix   /usr
++-
++-Summary: Utility to administer the Linux Virtual Server
++-Name: ipvsadm
++-Version: 1.26
++-Release: 1
++-License: GPL
++-URL: http://www.LinuxVirtualServer.org/
++-Group: Applications/System
++-Source0: http://www.LinuxVirtualServer.org/software/ipvsadm-%{version}.tar.gz
++-BuildRoot: /var/tmp/%name-%{PACKAGE_VERSION}-root
++-Provides: %{name}-%{version}
++-Conflicts: piranha <= 0.4.14
++-
++-%description
++-ipvsadm is a utility to administer the IP Virtual Server services
++-offered by the latest Linux kernel 2.6.x.
++-
++-
++-%prep
++-%setup -n %{name}-%{version}
++-
++-
++-%build
++-CFLAGS="${RPM_OPT_FLAGS}" make
++-
++-
++-%install
++-rm -rf $RPM_BUILD_ROOT
++-mkdir -p ${RPM_BUILD_ROOT}/{sbin,%{_mandir}/man8,etc/rc.d/init.d}
++-make install BUILD_ROOT=${RPM_BUILD_ROOT} MANDIR=%{_mandir}
++-
++-
++-%files
++-%defattr(-,root,root)
++-%doc README
++-%config /etc/rc.d/init.d/ipvsadm
++-/sbin/ipvsadm*
++-%{_mandir}/man8/ipvsadm*
++-
++-%post
++-/sbin/chkconfig --add ipvsadm
++-
++-%preun
++-/sbin/chkconfig --del ipvsadm
++-
++-
++-%clean
++-rm -rf $RPM_BUILD_DIR/%{name}
++-rm -rf $RPM_BUILD_ROOT
++-
++-
++-%changelog
++-* Thu Jun 23 2005 Steve Nielsen <snielsen@comscore.com>
++-- Respect rpmmacros that might be set (by using rpm --eval)
++-
++-* Sat Dec 20 2003 Wensong Zhang <wensong@linux-vs.org>
++-- tidy up the description
++-
++-* Sat Apr  5 2003 Wensong Zhang <wensong@linux-vs.org>
++-- Removed the unnecessary Docdir setting.
++-
++-* Thu Dec 16 2001 Wensong Zhang <wensong@linuxvirtualserver.org>
++-- Changed to install ipvsadm man pages according to the %{_mandir}
++-
++-* Thu Dec 30 2000 Wensong Zhang <wensong@linuxvirtualserver.org>
++-- update the %file section
++-
++-* Thu Dec 17 2000 Wensong Zhang <wensong@linuxvirtualserver.org>
++-- Added a if-condition to keep both new or old rpm utility building
++-  the package happily.
++-
++-* Tue Dec 12 2000 P.Copeland <bryce@redhat.com>
++-- Small modifications to make the compiler happy in RH7 and the Alpha
++-- Fixed the documentation file that got missed off in building
++-  the rpm
++-- Made a number of -pedantic mods though popt will not compile with
++-  -pedantic
++-
++-* Wed Aug 9 2000 Horms <horms@vergenet.net>
++-- Removed Obseletes tag as ipvsadm is back in /sbin where it belongs 
++-  as it is more or less analogous to both route and ipchains both of
++-  which reside in /sbin.
++-- Create directory to install init script into. Init scripts won't install
++-  into build directory unless this is done
++-
++-* Thu Jul  6 2000 Wensong Zhang <wensong@linuxvirtualserver.org>
++-- Changed to build rpms on the ipvsadm tar ball directly
++-
++-* Wed Jun 21 2000 P.Copeland <copeland@redhat.com>
++-- fixed silly install permission settings
++-
++-* Mon Jun 19 2000 P.Copeland <copeland@redhat.com>
++-- Added 'dist' and 'rpms' to the Makefile
++-- Added Obsoletes tag since there were early versions
++-  of ipvsadm-*.rpm that installed in /sbin
++-- Obsolete tag was a bit vicious re: piranha
++-
++-* Mon Apr 10 2000 Horms <horms@vergenet.net>
++-- created for version 1.9
++diff -Naur ipvsadm-1.26/libipvs/ip_vs.h ipvsadm-1.26.owrt/libipvs/ip_vs.h
++--- ipvsadm-1.26/libipvs/ip_vs.h	2011-02-07 02:38:57.000000000 +0000
+++++ ipvsadm-1.26.owrt/libipvs/ip_vs.h	2016-01-24 19:59:27.304631247 +0000
++@@ -10,6 +10,7 @@
++ #include <sys/socket.h>
++ #include <arpa/inet.h>
++ #include <linux/types.h>	/* For __beXX types in userland */
+++#include <sys/types.h>
++
++ #ifdef LIBIPVS_USE_NL
++ #include <netlink/netlink.h>
++diff -Naur ipvsadm-1.26/libipvs/libipvs.c ipvsadm-1.26.owrt/libipvs/libipvs.c
++--- ipvsadm-1.26/libipvs/libipvs.c	2011-02-07 02:38:57.000000000 +0000
+++++ ipvsadm-1.26.owrt/libipvs/libipvs.c	2016-01-24 20:02:49.840430677 +0000
++@@ -32,7 +32,7 @@
++ struct ip_vs_getinfo ipvs_info;
++
++ #ifdef LIBIPVS_USE_NL
++-static struct nl_handle *sock = NULL;
+++static struct nl_sock *sock = NULL;
++ static int family, try_nl = 1;
++ #endif
++
++@@ -73,7 +73,7 @@
++ {
++ 	int err = EINVAL;
++
++-	sock = nl_handle_alloc();
+++	sock = nl_socket_alloc();
++ 	if (!sock) {
++ 		nlmsg_free(msg);
++ 		return -1;
++@@ -88,7 +88,7 @@
++
++ 	/* To test connections and set the family */
++ 	if (msg == NULL) {
++-		nl_handle_destroy(sock);
+++		nl_socket_free(sock);
++ 		sock = NULL;
++ 		return 0;
++ 	}
++@@ -104,12 +104,12 @@
++
++ 	nlmsg_free(msg);
++
++-	nl_handle_destroy(sock);
+++	nl_socket_free(sock);
++
++ 	return 0;
++
++ fail_genl:
++-	nl_handle_destroy(sock);
+++	nl_socket_free(sock);
++ 	sock = NULL;
++ 	nlmsg_free(msg);
++ 	errno = err;
++diff -Naur ipvsadm-1.26/Makefile ipvsadm-1.26.owrt/Makefile
++--- ipvsadm-1.26/Makefile	2011-02-08 00:24:23.000000000 +0000
+++++ ipvsadm-1.26.owrt/Makefile	2016-01-24 12:40:39.427307725 +0000
++@@ -37,18 +37,17 @@
++
++ CC		= gcc
++ INCLUDE		=
++-SBIN		= $(BUILD_ROOT)/sbin
+++SBIN		= $(DESTDIR)/usr/sbin
++ MANDIR		= usr/man
++-MAN		= $(BUILD_ROOT)/$(MANDIR)/man8
++-INIT		= $(BUILD_ROOT)/etc/rc.d/init.d
+++INIT		= $(DESTDIR)/etc/rc.d/init.d
++ MKDIR		= mkdir
++ INSTALL		= install
++ STATIC_LIBS	= libipvs/libipvs.a
++
++ ifeq "${ARCH}" "sparc64"
++-    CFLAGS = -Wall -Wunused -Wstrict-prototypes -g -m64 -pipe -mcpu=ultrasparc -mcmodel=medlow
+++    CFLAGS += -Wall -Wunused -Wstrict-prototypes -g -m64 -pipe -mcpu=ultrasparc -mcmodel=medlow
++ else
++-    CFLAGS = -Wall -Wunused -Wstrict-prototypes -g
+++    CFLAGS += -Wall -Wunused -Wstrict-prototypes -g
++ endif
++
++
++@@ -104,12 +103,6 @@
++ 		$(INSTALL) -m 0755 ipvsadm $(SBIN)
++ 		$(INSTALL) -m 0755 ipvsadm-save $(SBIN)
++ 		$(INSTALL) -m 0755 ipvsadm-restore $(SBIN)
++-		[ -d $(MAN) ] || $(MKDIR) -p $(MAN)
++-		$(INSTALL) -m 0644 ipvsadm.8 $(MAN)
++-		$(INSTALL) -m 0644 ipvsadm-save.8 $(MAN)
++-		$(INSTALL) -m 0644 ipvsadm-restore.8 $(MAN)
++-		[ -d $(INIT) ] || $(MKDIR) -p $(INIT)
++-		$(INSTALL) -m 0755 ipvsadm.sh $(INIT)/ipvsadm
++
++ clean:
++ 		rm -f ipvsadm $(NAME).spec $(NAME)-$(VERSION).tar.gz
